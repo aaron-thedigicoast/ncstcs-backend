@@ -1,0 +1,26 @@
+import mongoose, { Schema } from "mongoose";
+
+export interface IUser extends mongoose.Document {
+  username: string;
+  password: string;
+  role: "admin" | "agency" | "operator" | "courier";
+  name?: string;
+  email?: string;
+  dvlaNumber?: string;
+  ghanaCardNumber?: string;
+  dateOfBirth?: Date;
+  createdAt: Date;
+}
+
+const UserSchema = new Schema<IUser>({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ["admin", "agency", "operator", "courier"], default: "courier" },
+  name: { type: String },
+  email: { type: String, unique: true, sparse: true },
+  dvlaNumber: { type: String, unique: true, sparse: true },
+  ghanaCardNumber: { type: String, unique: true, sparse: true },
+  dateOfBirth: { type: Date }
+}, { timestamps: true });
+
+export default mongoose.model<IUser>("User", UserSchema);
