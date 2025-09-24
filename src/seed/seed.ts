@@ -1,6 +1,6 @@
 import { connectDB } from "../utils/db";
 import User from "../models/User";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 dotenv.config();
 
