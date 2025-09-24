@@ -9,7 +9,7 @@ export interface ISOS extends mongoose.Document {
 }
 
 const SossSchema = new Schema<ISOS>({
-  courierId: { type: Schema.Types.ObjectId, ref: "Courier" },
+  courierId: { type: Schema.Types.ObjectId, ref: "User" },
   location: {
     type: { type: String, enum: ["Point"], default: "Point" },
     coordinates: { type: [Number], required: true }

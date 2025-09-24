@@ -1,64 +1,45 @@
 import { Request, Response } from "express";
-import Courier from "../models/Courier";
+import User from "../models/User";
 import mongoose from "mongoose";
 
 export async function getAllCouriers(req: Request, res: Response) {
-  const { q, status, compliant } = req.query;
-  const filter: any = {};
-  if (status) filter.status = status;
-  if (compliant === "true") {
-    filter["compliance.license"] = true; // simplistic
-    filter["compliance.insurance"] = true;
+  const { q } = req.query as { q?: string };
+  const filter: any = { role: 'courier' };
+  if (q) {
+    filter.$or = [
+      { name: new RegExp(String(q), 'i') },
+      { username: new RegExp(String(q), 'i') },
+      { email: new RegExp(String(q), 'i') },
+      { dvlaNumber: new RegExp(String(q), 'i') },
+      { ghanaCardNumber: new RegExp(String(q), 'i') },
+    ];
   }
-  if (q) filter.$or = [
-    { name: new RegExp(String(q), "i") },
-    { vehiclePlate: new RegExp(String(q), "i") }
-  ];
-  const couriers = await Courier.find(filter).limit(200);
-  res.json(couriers);
+  const users = await User.find(filter).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth');
+  res.json(users.map(u => ({
+    id: u._id,
+    name: u.name || u.username,
+    username: u.username,
+    email: u.email,
+    dvlaNumber: (u as any).dvlaNumber,
+    ghanaCardNumber: (u as any).ghanaCardNumber,
+    dateOfBirth: (u as any).dateOfBirth,
+  })));
 }
 
 export async function getCourierById(req: Request, res: Response) {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid id" });
-  const courier = await Courier.findById(id);
-  if (!courier) return res.status(404).json({ message: "Not found" });
-  res.json(courier);
-}
-
-export async function createCourier(req: Request, res: Response) {
-  const { name, vehiclePlate, phone, compliance } = req.body;
-  const courier = await Courier.create({ name, vehiclePlate, phone, compliance });
-  res.status(201).json(courier);
-}
-
-export async function updateCourierLocation(req: Request, res: Response) {
-  const { id } = req.params;
-  const { coordinates } = req.body; // [lng, lat]
-  if (!Array.isArray(coordinates) || coordinates.length !== 2) {
-    return res.status(400).json({ message: "Invalid coordinates" });
-  }
-  const [lng, lat] = coordinates as number[];
-  if (
-    typeof lng !== "number" ||
-    typeof lat !== "number" ||
-    Number.isNaN(lng) ||
-    Number.isNaN(lat)
-  ) {
-    return res.status(400).json({ message: "Coordinates must be numbers in [lng, lat] format" });
-  }
-  const coordTuple: [number, number] = [lng, lat];
-  const courier = await Courier.findById(id);
-  if (!courier) return res.status(404).json({ message: "Not found" });
-  courier.location = { type: "Point", coordinates: coordTuple };
-  courier.history.push({ timestamp: new Date(), coordinates: coordTuple });
-  await courier.save();
-  res.json({ ok: true });
-}
-
-export async function getCourierHistory(req: Request, res: Response) {
-  const { id } = req.params;
-  const courier = await Courier.findById(id);
-  if (!courier) return res.status(404).json({ message: "Not found" });
-  res.json(courier.history || []);
+  const u = await User.findById(id).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth role');
+  if (!u) return res.status(404).json({ message: "Not found" });
+  if (u.role !== 'courier') return res.status(404).json({ message: "Not found" });
+  res.json({
+    id: u._id,
+    name: u.name || u.username,
+    username: u.username,
+    email: u.email,
+    dvlaNumber: (u as any).dvlaNumber,
+    ghanaCardNumber: (u as any).ghanaCardNumber,
+    dateOfBirth: (u as any).dateOfBirth,
+    role: u.role,
+  });
 }

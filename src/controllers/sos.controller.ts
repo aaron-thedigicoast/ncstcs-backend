@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import SOS from "../models/SOS";
-import Courier from "../models/Courier";
 import mongoose from "mongoose";
 
 export async function getAllSOS(req: Request, res: Response) {
@@ -17,8 +16,6 @@ export async function createSOS(req: Request, res: Response) {
     courierId,
     location: { type: "Point", coordinates }
   });
-  // optional: mark last known courier location
-  await Courier.findByIdAndUpdate(courierId, { location: { type: "Point", coordinates } });
   res.status(201).json(soc);
 }
 

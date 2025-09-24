@@ -15,15 +15,15 @@ export async function register(req: Request, res: Response) {
   const existing = await User.findOne({ username });
   if (existing) return res.status(409).json({ message: "Username exists" });
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ 
-    username, 
-    password: hashed, 
-    name: name || fullName, 
-    role: role || 'courier', 
-    email, 
-    dvlaNumber, 
-    ghanaCardNumber, 
-    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined 
+  const user = await User.create({
+    username,
+    password: hashed,
+    name: name || fullName,
+    role: role || 'courier',
+    email,
+    dvlaNumber,
+    ghanaCardNumber,
+    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined
   });
   const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
   res.status(201).json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role } });
@@ -46,7 +46,7 @@ export async function loginWithGhanaCard(req: Request, res: Response) {
   if (!ghanaCardNumber || !dateOfBirth) return res.status(400).json({ message: "Missing Ghana Card details" });
   const user = await User.findOne({ ghanaCardNumber: ghanaCardNumber.toUpperCase() });
   if (!user) return res.status(404).json({ message: "Ghana Card not found" });
-  if (user.dateOfBirth && new Date(user.dateOfBirth).toISOString().slice(0,10) !== new Date(dateOfBirth).toISOString().slice(0,10)) {
+  if (user.dateOfBirth && new Date(user.dateOfBirth).toISOString().slice(0, 10) !== new Date(dateOfBirth).toISOString().slice(0, 10)) {
     return res.status(401).json({ message: "Ghana Card verification failed" });
   }
   const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
@@ -58,7 +58,7 @@ export async function loginWithDVLA(req: Request, res: Response) {
   if (!dvlaNumber) return res.status(400).json({ message: "Missing DVLA number" });
   const user = await User.findOne({ dvlaNumber: dvlaNumber.toUpperCase() });
   if (!user) return res.status(404).json({ message: "DVLA number not found" });
-  if (dateOfBirth && user.dateOfBirth && new Date(user.dateOfBirth).toISOString().slice(0,10) !== new Date(dateOfBirth).toISOString().slice(0,10)) {
+  if (dateOfBirth && user.dateOfBirth && new Date(user.dateOfBirth).toISOString().slice(0, 10) !== new Date(dateOfBirth).toISOString().slice(0, 10)) {
     return res.status(401).json({ message: "DVLA verification failed" });
   }
   const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
