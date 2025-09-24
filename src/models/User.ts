@@ -6,6 +6,7 @@ export interface IUser extends mongoose.Document {
   role: "admin" | "agency" | "operator" | "courier";
   name?: string;
   email?: string;
+  phone?: string;
   dvlaNumber?: string;
   ghanaCardNumber?: string;
   dateOfBirth?: Date;
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUser>({
   role: { type: String, enum: ["admin", "agency", "operator", "courier"], default: "courier" },
   name: { type: String },
   email: { type: String, unique: true, sparse: true },
+  phone: { type: String, unique: true, sparse: true },
   dvlaNumber: { type: String, unique: true, sparse: true },
   ghanaCardNumber: { type: String, unique: true, sparse: true },
   dateOfBirth: { type: Date }

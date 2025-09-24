@@ -10,10 +10,25 @@ const JWT_EXPIRES_IN: SignOptions["expiresIn"] = (process.env.JWT_EXPIRES_IN as 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
 export async function register(req: Request, res: Response) {
-  const { username, password, name, fullName, role, email, dvlaNumber, ghanaCardNumber, dateOfBirth } = req.body as any;
+  const { username, password, name, fullName, role, email, dvlaNumber, ghanaCardNumber, dateOfBirth, phone: rawPhone } = req.body as any;
   if (!username || !password) return res.status(400).json({ message: "Missing fields" });
   const existing = await User.findOne({ username });
   if (existing) return res.status(409).json({ message: "Username exists" });
+
+  // Normalize Ghana phone numbers: input like 024XXXXXXX should be stored as +233XXXXXXXXX
+  let phone: string | undefined = undefined;
+  if (rawPhone) {
+    const digits = String(rawPhone).replace(/\D/g, "");
+    if (digits.length === 10 && digits.startsWith("0")) {
+      phone = "+233" + digits.slice(1);
+    } else if (digits.length === 12 && digits.startsWith("233")) {
+      phone = "+" + digits;
+    } else if (String(rawPhone).startsWith("+233") && String(rawPhone).length === 13) {
+      phone = String(rawPhone);
+    } else {
+      return res.status(400).json({ message: "Invalid phone format. Use 024XXXXXXX" });
+    }
+  }
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await User.create({
     username,
@@ -21,6 +36,7 @@ export async function register(req: Request, res: Response) {
     name: name || fullName,
     role: role || 'courier',
     email,
+    phone,
     dvlaNumber,
     ghanaCardNumber,
     dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined
