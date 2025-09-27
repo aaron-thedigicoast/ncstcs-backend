@@ -1,17 +1,30 @@
 import { Request, Response } from "express";
 import User from "../models/User";
-import SOS from "../models/SOS";
 
-export async function getAnalytics(req: Request, res: Response) {
-  // Simple aggregated examples. Expand as needed.
-  const totalCouriers = await User.countDocuments({ role: 'courier' });
-  const compliantCount = 0; // placeholder until compliance is modeled on users
-  const latestSOS = await SOS.find().sort({ timestamp: -1 }).limit(10);
+export const getDashboardData = async (req: Request, res: Response) => {
+    try {
+        const totalCouriers = await User.countDocuments({ role: "courier" });
+        const activeCouriers = await User.countDocuments({ role: "courier", status: "active" });
+        const pendingVerifications = await User.countDocuments({
+            role: "courier",
+            isCompliant: false,
+            $or: [
+                { dvlaLicenseImage: { $exists: true, $ne: null } },
+                { ghanaCardImage: { $exists: true, $ne: null } },
+            ],
+        });
 
-  res.json({
-    totalCouriers,
-    compliantCount,
-    complianceRate: totalCouriers ? (compliantCount / totalCouriers) : 0,
-    recentSOS: latestSOS
-  });
-}
+        const compliantCouriers = await User.countDocuments({ role: "courier", isCompliant: true });
+        const complianceRate = totalCouriers > 0 ? (compliantCouriers / totalCouriers) * 100 : 0;
+
+        res.status(200).json({
+            totalCouriers,
+            activeCouriers,
+            pendingVerifications,
+            complianceRate,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};

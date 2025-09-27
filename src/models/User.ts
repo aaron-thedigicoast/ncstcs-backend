@@ -13,6 +13,7 @@ export interface IUser extends mongoose.Document {
   dvlaLicenseImage?: string;
   ghanaCardImage?: string;
   isCompliant?: boolean;
+  status?: "active" | "inactive" | "suspended";
   createdAt: Date;
 }
 
@@ -28,7 +29,8 @@ const UserSchema = new Schema<IUser>({
   dateOfBirth: { type: Date },
   dvlaLicenseImage: { type: String },
   ghanaCardImage: { type: String },
-  isCompliant: { type: Boolean, default: false }
+  isCompliant: { type: Boolean, default: false },
+  status: { type: String, enum: ["active", "inactive", "suspended"], default: "active" }
 }, { timestamps: true });
 
 export default mongoose.model<IUser>("User", UserSchema);
