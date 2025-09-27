@@ -12,6 +12,7 @@ export interface IUser extends mongoose.Document {
   dateOfBirth?: Date;
   dvlaLicenseImage?: string;
   ghanaCardImage?: string;
+  isCompliant?: boolean;
   createdAt: Date;
 }
 
@@ -26,7 +27,8 @@ const UserSchema = new Schema<IUser>({
   ghanaCardNumber: { type: String, unique: true, sparse: true },
   dateOfBirth: { type: Date },
   dvlaLicenseImage: { type: String },
-  ghanaCardImage: { type: String }
+  ghanaCardImage: { type: String },
+  isCompliant: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model<IUser>("User", UserSchema);

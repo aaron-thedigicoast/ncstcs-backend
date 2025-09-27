@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { uploadComplianceFiles, serveComplianceFile, currentUser } from "../controllers/user.controller";
+import { uploadComplianceFiles, serveComplianceFile, currentUser, updateComplianceStatus, getComplianceData } from "../controllers/user.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 import { upload } from "../middleware/upload.middleware";
 
@@ -13,5 +13,7 @@ router.post("/compliance-upload", requireAuth, upload.fields([
 
 router.get("/compliance-files/:filename", serveComplianceFile);
 router.get("/current-user", requireAuth, currentUser);
+router.put("/:id/compliance", requireAuth, updateComplianceStatus);
+router.get("/:id/compliance", requireAuth, getComplianceData);
 
 export default router;
