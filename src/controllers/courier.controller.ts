@@ -14,7 +14,7 @@ export async function getAllCouriers(req: Request, res: Response) {
       { ghanaCardNumber: new RegExp(String(q), 'i') },
     ];
   }
-  const users = await User.find(filter).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth role createdAt');
+  const users = await User.find(filter).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth role createdAt dvlaLicenseImage ghanaCardImage isCompliant');
   res.json(users.map(u => ({
     id: u._id,
     name: u.name || u.username,
@@ -24,6 +24,9 @@ export async function getAllCouriers(req: Request, res: Response) {
     ghanaCardNumber: (u as any).ghanaCardNumber,
     dateOfBirth: (u as any).dateOfBirth,
     role: u.role,
+    dvlaLicenseImage: (u as any).dvlaLicenseImage,
+    ghanaCardImage: (u as any).ghanaCardImage,
+    isCompliant: (u as any).isCompliant,
     createdAt: u.createdAt,
   })));
 }
@@ -31,7 +34,7 @@ export async function getAllCouriers(req: Request, res: Response) {
 export async function getCourierById(req: Request, res: Response) {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid id" });
-  const u = await User.findById(id).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth role createdAt');
+  const u = await User.findById(id).select('_id name username email dvlaNumber ghanaCardNumber dateOfBirth role createdAt dvlaLicenseImage ghanaCardImage isCompliant');
   if (!u) return res.status(404).json({ message: "Not found" });
   if (u.role !== 'courier') return res.status(404).json({ message: "Not found" });
   res.json({
@@ -43,6 +46,9 @@ export async function getCourierById(req: Request, res: Response) {
     ghanaCardNumber: (u as any).ghanaCardNumber,
     dateOfBirth: (u as any).dateOfBirth,
     role: u.role,
+    dvlaLicenseImage: (u as any).dvlaLicenseImage,
+    ghanaCardImage: (u as any).ghanaCardImage,
+    isCompliant: (u as any).isCompliant,
     createdAt: u.createdAt,
   });
 }
