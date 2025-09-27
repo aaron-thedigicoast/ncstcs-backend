@@ -10,6 +10,7 @@ import courierRoutes from "./routes/courier.routes";
 import analyticsRoutes from "./routes/analytics.routes";
 import sosRoutes from "./routes/sos.routes";
 import { errorHandler } from "./middleware/error.middleware";
+import userRoutes from "./routes/user.routes";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/auth", authRoutes);
 app.use("/couriers", courierRoutes);
 app.use("/analytics", analyticsRoutes);
 app.use("/sos", sosRoutes);
+app.use("/users", userRoutes);
 
 app.use(errorHandler);
 
